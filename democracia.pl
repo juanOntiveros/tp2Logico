@@ -84,3 +84,73 @@ esPicante(Provincia) :-
     sePresentanAlMenosDosPartidos(Provincia),
     tieneMasDeUnMillonDeHabitantes(Provincia).
 
+%  ----- Punto 3 del TP -----
+
+intencionDeVotoEn(buenosAires, rojo, 40).
+intencionDeVotoEn(buenosAires, azul, 30).
+intencionDeVotoEn(buenosAires, amarillo, 30).
+intencionDeVotoEn(chaco, rojo, 50).
+intencionDeVotoEn(chaco, azul, 20).
+intencionDeVotoEn(chaco, amarillo, 0).
+intencionDeVotoEn(tierraDelFuego, rojo, 40).
+intencionDeVotoEn(tierraDelFuego, azul, 20).
+intencionDeVotoEn(tierraDelFuego, amarillo, 10).
+intencionDeVotoEn(sanLuis, rojo, 50).
+intencionDeVotoEn(sanLuis, azul, 20).
+intencionDeVotoEn(sanLuis, amarillo, 0).
+intencionDeVotoEn(neuquen, rojo, 80).
+intencionDeVotoEn(neuquen, azul, 10).
+intencionDeVotoEn(neuquen, amarillo, 0).
+intencionDeVotoEn(santaFe, rojo, 20).
+intencionDeVotoEn(santaFe, azul, 40).
+intencionDeVotoEn(santaFe, amarillo, 40).
+intencionDeVotoEn(cordoba, rojo, 10).
+intencionDeVotoEn(cordoba, azul, 60).
+intencionDeVotoEn(cordoba, amarillo, 20).
+intencionDeVotoEn(chubut, rojo, 15).
+intencionDeVotoEn(chubut, azul, 15).
+intencionDeVotoEn(chubut, amarillo, 15).
+intencionDeVotoEn(formosa, rojo, 0).
+intencionDeVotoEn(formosa, azul, 0).
+intencionDeVotoEn(formosa, amarillo, 0).
+intencionDeVotoEn(tucuman, rojo, 40).
+intencionDeVotoEn(tucuman, azul, 40).
+intencionDeVotoEn(tucuman, amarillo, 20).
+intencionDeVotoEn(salta, rojo, 30).
+intencionDeVotoEn(salta, azul, 60).
+intencionDeVotoEn(salta, amarillo, 10).
+intencionDeVotoEn(santaCruz, rojo, 10).
+intencionDeVotoEn(santaCruz, azul, 20).
+intencionDeVotoEn(santaCruz, amarillo, 30).
+intencionDeVotoEn(laPampa, rojo, 25).
+intencionDeVotoEn(laPampa, azul, 25).
+intencionDeVotoEn(laPampa, amarillo, 40).
+intencionDeVotoEn(corrientes, rojo, 30).
+intencionDeVotoEn(corrientes, azul, 30).
+intencionDeVotoEn(corrientes, amarillo, 10).
+intencionDeVotoEn(misiones, rojo, 90).
+intencionDeVotoEn(misiones, azul, 0).
+intencionDeVotoEn(misiones, amarillo, 0).
+
+sonAmbosCandidatos(UnCandidato, OtroCandidato, UnPartido, OtroPartido) :- 
+    candidato(UnCandidato, UnPartido),
+    candidato(OtroCandidato, OtroPartido).
+
+leGanaA(UnCandidato, OtroCandidato, Provincia) :-
+    sonAmbosCandidatos(UnCandidato, OtroCandidato, UnPartido, OtroPartido), 
+    sePostula(Provincia, UnPartido),
+    not(sePostula(Provincia, OtroPartido)).
+
+leGanaA(UnCandidato, OtroCandidato, Provincia) :-
+    sonAmbosCandidatos(UnCandidato, OtroCandidato, UnPartido, OtroPartido),
+    not(UnPartido \= OtroPartido),
+    sePostula(Provincia, UnPartido).
+
+leGanaA(UnCandidato, OtroCandidato, Provincia) :-
+    sonAmbosCandidatos(UnCandidato, OtroCandidato, UnPartido, OtroPartido),
+    sePostula(Provincia, UnPartido),
+    sePostula(Provincia, OtroPartido),
+    intencionDeVotoEn(Provincia, UnPartido, UnaIntencion),
+    intencionDeVotoEn(Provincia, OtroPartido, OtraIntencion),
+    UnaIntencion > OtraIntencion.
+
