@@ -68,3 +68,19 @@ No se refleja en la base de conocimientos porque no es necesario explicitarlo qu
 - El partido violeta no tiene candidatos.
 
 */
+
+% ----- Punto 2 del TP -----
+
+sePresentanAlMenosDosPartidos(Provincia) :-
+    sePostula(Provincia, UnPartido),
+    sePostula(Provincia, OtroPartido),
+    UnPartido \= OtroPartido.
+
+tieneMasDeUnMillonDeHabitantes(Provincia) :-
+    cantidadDeHabitantes(Provincia, Habitantes),
+    Habitantes > 1000000.
+
+esPicante(Provincia) :- 
+    sePresentanAlMenosDosPartidos(Provincia),
+    tieneMasDeUnMillonDeHabitantes(Provincia).
+
