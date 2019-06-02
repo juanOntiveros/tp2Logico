@@ -158,28 +158,27 @@ leGanaA(UnCandidato, OtroCandidato, Provincia) :-
 
 %  ----- Punto 4 del TP -----
 
-esMenorA(Candidato, OtroCandidato) :-
+esDeMenorEdadA(Candidato, OtroCandidato) :-
     edad(Candidato, Edad),
     edad(OtroCandidato, OtraEdad),
     Edad < OtraEdad.
 
-esMayorA(Candidato, OtroCandidato) :-
+esDeMayorEdadA(Candidato, OtroCandidato) :-
     edad(Candidato, Edad),
     edad(OtroCandidato, OtraEdad),
     Edad > OtraEdad.
 
 tieneUnaEdadMasChica(Candidato, Partido) :-
-    candidato(Candidato, Partido),
-    candidato(SegundoCandidato, Partido),
-    esMenorA(Candidato, SegundoCandidato).
+    sonAmbosCandidatos(Candidato, SegundoCandidato, Partido, Partido),
+    esDeMenorEdadA(Candidato, SegundoCandidato).
 
 tieneUnaEdadIntermedia(Candidato, Partido) :- 
     candidato(Candidato, Partido),
     candidato(SegundoCandidato, Partido),
     candidato(TercerCandidato, Partido),
     SegundoCandidato \= TercerCandidato,
-    esMenorA(Candidato, SegundoCandidato),
-    esMayorA(Candidato, TercerCandidato).
+    esDeMenorEdadA(Candidato, SegundoCandidato),
+    esDeMayorEdadA(Candidato, TercerCandidato).
 
 esElMasJovenDeSuPartido(Candidato) :-
     candidato(Candidato, Partido),
@@ -198,3 +197,96 @@ ganaEnTodasLasProvincias(Candidato) :-
 elGranCandidato(Candidato) :-
     ganaEnTodasLasProvincias(Candidato),
     esElMasJovenDeSuPartido(Candidato).
+
+/*
+
+¿Cómo podemos estar seguros de esto?
+
+Podemos estar seguros de esto ya que se cumplen dos cosas: 
+
+- De todos los candidatos, los unicos que ganan en todas las provincias son los candidatos del 
+partido rojo. Esto pasa porque en las provincias que se presentan o tienen mayora intencion de 
+voto o no hay partidos que les presenten oposicion ya que no se presentan.
+- Del mismo partido rojo, el candidato de menor edad es frank.
+
+¿Qué tipo de consulta deberíamos realizar? 
+
+- Primero consultamos que candidato gana en todas las provincias, quedando solo los del partido 
+rojo (frank, claire, catherine).
+- Luego consultamos cuales son los candidatos mas jovenes de sus partidos (frank, linda, jackie).
+- El unico que cumple las dos condiciones es frank.  
+
+¿Con qué concepto está relacionado?
+
+- Inversibilidad? Cuantificador Universal? 
+
+*/
+
+%  ----- Punto 5 del TP -----
+
+tieneUnaIntencionDeVoto(Provincia, Partido, Intencion) :-
+    candidato(_, Partido),
+    intencionDeVotoEn(Provincia, Partido, Intencion).
+
+tieneMayorIntencionDeVotoA(Partido, UnaIntencion, Provincia):-
+    intencionDeVotoEn(Provincia, Partido, OtraIntencion),
+    OtraIntencion > UnaIntencion.
+
+tieneMenorIntencionDeVotoA(Partido, UnaIntencion, Provincia):-
+    intencionDeVotoEn(Provincia, Partido, OtraIntencion),
+    OtraIntencion < UnaIntencion.
+
+tieneUnaIntencionIntermedia(Provincia, Intencion) :-
+    candidato(_, SegundoPartido),
+    candidato(_, TercerPartido),
+    SegundoPartido \= TercerPartido,
+    tieneMenorIntencionDeVotoA(SegundoPartido, Intencion, Provincia),
+    tieneMayorIntencionDeVotoA(TercerPartido, Intencion, Provincia).
+
+tieneUnaIntencionAlta(Provincia, Intencion) :-
+    candidato(_, SegundoPartido),
+    tieneMenorIntencionDeVotoA(SegundoPartido, Intencion, Provincia).
+
+tieneUnaIntencionBaja(Provincia, Intencion) :-
+    candidato(_, SegundoPartido),
+    tieneMayorIntencionDeVotoA(SegundoPartido, Intencion, Provincia).
+
+tieneUnaIntencionGanadora(Provincia, Intencion) :-
+    tieneUnaIntencionAlta(Provincia, Intencion),
+    not(tieneUnaIntencionIntermedia(Provincia, Intencion)).
+
+tieneUnaIntencionPerdedora(Provincia, Intencion) :-
+    tieneUnaIntencionBaja(Provincia, Intencion),
+    not(tieneUnaIntencionIntermedia(Provincia, Intencion)).
+
+tieneUnaIntencionPerdedora(Provincia, Intencion) :-
+    tieneUnaIntencionIntermedia(Provincia, Intencion).
+
+ajusteConsultora(Partido, Provincia, Porcentaje) :-
+    tieneUnaIntencionDeVoto(Provincia, Partido, Intencion),
+    tieneUnaIntencionGanadora(Provincia, Intencion),
+    Porcentaje is Intencion - 20.
+
+ajusteConsultora(Partido, Provincia, Porcentaje) :-
+    tieneUnaIntencionDeVoto(Provincia, Partido, Intencion),
+    tieneUnaIntencionPerdedora(Provincia, Intencion),
+    Porcentaje is Intencion + 5.
+
+/*
+
+Si ahora quisiéramos evaluar todos los predicados con los valores reales de votos,
+¿Qué cambios deberíamos hacer? ¿Cuántos predicados deberíamos modificar?
+
+- Deberiamos modificar las clausulas de intencionDeVotoEn/3 con las verdaderas intenciones
+de voto. 
+
+Por ejemplo si consultaramos sin modificar:
+?- intencionDeVotoEn(buenosAires, rojo, Intencion)
+Intencion = 40
+
+Si quisieramos su verdadera intencion de voto deberiamos modificar el predicado a la forma:
+intencionDeVotoEn(buenosAires, rojo, 20).
+
+- Habria que modificar todas las clausulas de un unico predicado.
+
+*/
