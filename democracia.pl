@@ -16,7 +16,7 @@ candidato(heather, amarillo).
 
 edad(frank, 50).
 edad(claire, 52).
-edad(garret, 64).
+edad(garrett, 64).
 edad(peter, 26).
 edad(jackie, 38).
 edad(linda, 30).
@@ -28,12 +28,14 @@ sePostula(chaco, azul).
 sePostula(tierraDelFuego, azul).
 sePostula(sanLuis, azul).
 sePostula(neuquen, azul).
-sePostula(buenosAires, rojo).
+
+sePostula(buenosAires,  rojo).
 sePostula(santaFe, rojo).
 sePostula(cordoba, rojo).
 sePostula(chubut, rojo).
 sePostula(tierraDelFuego, rojo).
 sePostula(sanLuis, rojo).
+
 sePostula(chaco, amarillo).
 sePostula(formosa, amarillo).
 sePostula(tucuman, amarillo).
@@ -154,3 +156,45 @@ leGanaA(UnCandidato, OtroCandidato, Provincia) :-
     intencionDeVotoEn(Provincia, OtroPartido, OtraIntencion),
     UnaIntencion > OtraIntencion.
 
+%  ----- Punto 4 del TP -----
+
+esMenorA(Candidato, OtroCandidato) :-
+    edad(Candidato, Edad),
+    edad(OtroCandidato, OtraEdad),
+    Edad < OtraEdad.
+
+esMayorA(Candidato, OtroCandidato) :-
+    edad(Candidato, Edad),
+    edad(OtroCandidato, OtraEdad),
+    Edad > OtraEdad.
+
+tieneUnaEdadMasChica(Candidato, Partido) :-
+    candidato(Candidato, Partido),
+    candidato(SegundoCandidato, Partido),
+    esMenorA(Candidato, SegundoCandidato).
+
+tieneUnaEdadIntermedia(Candidato, Partido) :- 
+    candidato(Candidato, Partido),
+    candidato(SegundoCandidato, Partido),
+    candidato(TercerCandidato, Partido),
+    SegundoCandidato \= TercerCandidato,
+    esMenorA(Candidato, SegundoCandidato),
+    esMayorA(Candidato, TercerCandidato).
+
+esElMasJovenDeSuPartido(Candidato) :-
+    candidato(Candidato, Partido),
+    tieneUnaEdadMasChica(Candidato, Partido),
+    not(tieneUnaEdadIntermedia(Candidato, Partido)).
+
+ganaLaProvincia(Candidato, Partido, Provincia) :-
+    candidato(OtroCandidato, OtroPartido),
+    OtroPartido \= Partido,
+    leGanaA(Candidato, OtroCandidato, Provincia).
+
+ganaEnTodasLasProvincias(Candidato) :-
+    candidato(Candidato, Partido),
+    forall(sePostula(Provincia, Partido), ganaLaProvincia(Candidato, Partido, Provincia)).
+
+elGranCandidato(Candidato) :-
+    ganaEnTodasLasProvincias(Candidato),
+    esElMasJovenDeSuPartido(Candidato).
