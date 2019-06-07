@@ -342,3 +342,16 @@ influenciaDePromesas(nuevosPuestosDeTrabajo(PuestosPrometidos), 0) :-
 influenciaDePromesas(construir(ListaDeObras), Variacion) :-
     findall(Valor, valorASumarORestarDeCadaPromesa(ListaDeObras,Valor), Valores),
     sumlist(Valores, Variacion).
+
+%  ----- Punto 8 del TP -----
+
+calcularVariaciones(Promesas, Variacion) :-  
+    member(Promesa, Promesas),
+    influenciaDePromesas(Promesa, Variacion).
+
+promedioDeCrecimiento(Partido, Sumatoria) :-
+    promete(Partido, _),
+    findall(Promesa, promete(Partido, Promesa), Promesas),
+    findall(Variacion, calcularVariaciones(Promesas, Variacion), Variaciones),
+    sumlist(Variaciones, Sumatoria).
+
