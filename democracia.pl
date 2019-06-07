@@ -290,3 +290,16 @@ intencionDeVotoEn(buenosAires, rojo, 20).
 - Habria que modificar todas las clausulas de un unico predicado.
 
 */
+
+%  ----- Punto 6 del TP -----
+
+promete(azul, construir([edificio(hospital, 1000), edificio(jardin, 100), edificio(escuela, 5)])).
+promete(amarillo, construir([edificio(hospital, 100), edificio(universidad, 1), edificio(comisaria,200)])).
+
+promete(rojo, nuevosPuestosDeTrabajo(800000)).
+promete(amarillo, nuevosPuestosDeTrabajo(10000)).
+
+promete(azul, inflacion(2,4)).
+promete(amarillo, inflacion(1,15)).
+promete(rojo, inflacion(10,30)).
+
