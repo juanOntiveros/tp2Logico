@@ -303,3 +303,42 @@ promete(azul, inflacion(2,4)).
 promete(amarillo, inflacion(1,15)).
 promete(rojo, inflacion(10,30)).
 
+%  ----- Punto 7 del TP -----
+
+valorASumarORestarDeCadaPromesa(ListaDeObras, 2) :-
+    member(edificio(hospital, _), ListaDeObras).
+
+valorASumarORestarDeCadaPromesa(ListaDeObras, Variacion) :-
+    member(edificio(jardin, Cantidad), ListaDeObras),
+    Variacion is (Cantidad * 0.1).
+
+valorASumarORestarDeCadaPromesa(ListaDeObras, Variacion) :-
+    member(edificio(escuela, Cantidad), ListaDeObras),
+    Variacion is (Cantidad * 0.1).
+
+valorASumarORestarDeCadaPromesa(ListaDeObras, 2) :-
+    member(edificio(comisaria, 200), ListaDeObras).
+
+valorASumarORestarDeCadaPromesa(ListaDeObras, 0) :-
+    member(edificio(universidad, _), ListaDeObras).
+
+valorASumarORestarDeCadaPromesa(ListaDeObras, -1) :-
+    member(edificio(OtroEdificio, _), ListaDeObras),
+    OtroEdificio \= comisaria,
+    OtroEdificio \= hospital,
+    OtroEdificio \= escuela,
+    OtroEdificio \= jardin,
+    OtroEdificio \= universidad.
+
+influenciaDePromesas(inflacion(CotaInferior, CotaSuperior), Variacion) :-
+    Variacion is (-1) * (CotaInferior + CotaSuperior) / 2.
+
+influenciaDePromesas(nuevosPuestosDeTrabajo(PuestosPrometidos), 3) :-
+    PuestosPrometidos > 50000.
+
+influenciaDePromesas(nuevosPuestosDeTrabajo(PuestosPrometidos), 0) :-
+    PuestosPrometidos =< 50000.
+
+influenciaDePromesas(construir(ListaDeObras), Variacion) :-
+    findall(Valor, valorASumarORestarDeCadaPromesa(ListaDeObras,Valor), Valores),
+    sumlist(Valores, Variacion).
