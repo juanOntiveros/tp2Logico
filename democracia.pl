@@ -1,5 +1,6 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % ----- Punto 1 del TP -----
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 partido(rojo).
 partido(azul).
 partido(amarillo).
@@ -63,16 +64,16 @@ cantidadDeHabitantes(corriente, 992595).
 cantidadDeHabitantes(misiones, 1189446).
 
 /*
-
 No se refleja en la base de conocimientos porque no es necesario explicitarlo que:
-
 - Peter no es candidato del partido Amarillo.
 - El partido violeta no tiene candidatos.
 
+Maxi: NICE!
 */
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % ----- Punto 2 del TP -----
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 sePresentanAlMenosDosPartidos(Provincia) :-
     sePostula(Provincia, UnPartido),
     sePostula(Provincia, OtroPartido),
@@ -86,8 +87,13 @@ esPicante(Provincia) :-
     sePresentanAlMenosDosPartidos(Provincia),
     tieneMasDeUnMillonDeHabitantes(Provincia).
 
+/*
+Maxi: No mistakes here, muy buena declaratividad en los nombres!
+*/
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %  ----- Punto 3 del TP -----
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 intencionDeVotoEn(buenosAires, rojo, 40).
 intencionDeVotoEn(buenosAires, azul, 30).
 intencionDeVotoEn(buenosAires, amarillo, 30).
@@ -134,56 +140,55 @@ intencionDeVotoEn(misiones, rojo, 90).
 intencionDeVotoEn(misiones, azul, 0).
 intencionDeVotoEn(misiones, amarillo, 0).
 
-sonAmbosCandidatos(UnCandidato, OtroCandidato, UnPartido, OtroPartido) :- 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+leGanaA(UnCandidato, OtroCandidato, Provincia):- 
     candidato(UnCandidato, UnPartido),
-    candidato(OtroCandidato, OtroPartido).
-
-leGanaA(UnCandidato, OtroCandidato, Provincia) :-
-    sonAmbosCandidatos(UnCandidato, OtroCandidato, UnPartido, OtroPartido), 
     sePostula(Provincia, UnPartido),
+    candidato(OtroCandidato, OtroPartido),
+    ganaA(UnPartido, OtroPartido, Provincia).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ganaA(_, OtroPartido, Provincia):-
     not(sePostula(Provincia, OtroPartido)).
 
-leGanaA(UnCandidato, OtroCandidato, Provincia) :-
-    sonAmbosCandidatos(UnCandidato, OtroCandidato, UnPartido, OtroPartido),
+ganaA(unPartido, OtroPartido, Provincia):-
     not(UnPartido \= OtroPartido),
     sePostula(Provincia, UnPartido).
 
-leGanaA(UnCandidato, OtroCandidato, Provincia) :-
-    sonAmbosCandidatos(UnCandidato, OtroCandidato, UnPartido, OtroPartido),
-    sePostula(Provincia, UnPartido),
+ganaA(UnPartido, OtroPartido, Provincia) :-
     sePostula(Provincia, OtroPartido),
     intencionDeVotoEn(Provincia, UnPartido, UnaIntencion),
     intencionDeVotoEn(Provincia, OtroPartido, OtraIntencion),
     UnaIntencion > OtraIntencion.
 
+/*
+Maxi:   
+    - Fijense el tema de los generadores, están repitiendo lógica al utilizar el predicado generador "sonAmbosCandidatos"
+      En diferentes cláusulas de leGanaA.
+*/
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %  ----- Punto 4 del TP -----
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+candidatoDistinto(Candidato, OtroCandidato, Partido) :- 
+    candidato(Candidato, Partido), 
+    Candidato \=  OtroCandidato.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 esDeMenorEdadA(Candidato, OtroCandidato) :-
     edad(Candidato, Edad),
     edad(OtroCandidato, OtraEdad),
     Edad < OtraEdad.
 
-esDeMayorEdadA(Candidato, OtroCandidato) :-
-    edad(Candidato, Edad),
-    edad(OtroCandidato, OtraEdad),
-    Edad > OtraEdad.
-
-tieneUnaEdadMasChica(Candidato, Partido) :-
-    sonAmbosCandidatos(Candidato, SegundoCandidato, Partido, Partido),
-    esDeMenorEdadA(Candidato, SegundoCandidato).
-
-tieneUnaEdadIntermedia(Candidato, Partido) :- 
+esElMasJovenDeSuPartido(Candidato, Partido) :-
     candidato(Candidato, Partido),
-    candidato(SegundoCandidato, Partido),
-    candidato(TercerCandidato, Partido),
-    SegundoCandidato \= TercerCandidato,
-    esDeMenorEdadA(Candidato, SegundoCandidato),
-    esDeMayorEdadA(Candidato, TercerCandidato).
-
-esElMasJovenDeSuPartido(Candidato) :-
-    candidato(Candidato, Partido),
-    tieneUnaEdadMasChica(Candidato, Partido),
-    not(tieneUnaEdadIntermedia(Candidato, Partido)).
+    forall(candidatoDistinto(OtroCandidato, Candidato, Partido), esDeMenorEdadA(Candidato, OtroCandidato)).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ganaEnVotos(Partido, OtroPartido) :-
+intencionDeVotoEn(Provincia, Partido, VotosPartido),
+intencionDeVotoEn(Provincia, OtroPartido, VotosOtroPartido),
+Partido\=OtroPartido,
+VotosPartido > VotosOtroPartido.
 
 ganaLaProvincia(Candidato, Partido, Provincia) :-
     candidato(OtroCandidato, OtroPartido),
@@ -193,106 +198,100 @@ ganaLaProvincia(Candidato, Partido, Provincia) :-
 ganaEnTodasLasProvincias(Candidato) :-
     candidato(Candidato, Partido),
     forall(sePostula(Provincia, Partido), ganaLaProvincia(Candidato, Partido, Provincia)).
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elGranCandidato(Candidato) :-
+    candidato(Candidato, _),
     ganaEnTodasLasProvincias(Candidato),
-    esElMasJovenDeSuPartido(Candidato).
+    esElMasJovenDeSuPartido(Candidato, _).
 
 /*
+Maxi:   
+    - Medio que el forall de "ganaEnTodasLasProvincias" no estaría cerrandome. El forall hace referencia a que 
+      "Todas las provincias en donde se postule el partido, el candidato las gana", lo cual declarativamente puede
+      tener sentido, pero el tema es que ganaLaProvincia ya me retorna verdadero si existe un candidato del otro
+      partido al que el candidato le gane. Fijense de arreglar esa lógica!
+      
+    - Fijense también el tema de los generadores y la repetición de lógica entre ganaEnTodasLasProvincias y esElMasJovenDeSuPartido.
+    
+    - ojo con la lógica de esElMasJovenDeSuPartido. Intenten realizarlo también con forall y no con negación!
+      porque así como está tiene problemas de declaratividad.
+*/
 
+/*
 ¿Cómo podemos estar seguros de esto?
-
 Podemos estar seguros de esto ya que se cumplen dos cosas: 
-
 - De todos los candidatos, los unicos que ganan en todas las provincias son los candidatos del 
 partido rojo. Esto pasa porque en las provincias que se presentan o tienen mayora intencion de 
 voto o no hay partidos que les presenten oposicion ya que no se presentan.
 - Del mismo partido rojo, el candidato de menor edad es frank.
-
 ¿Qué tipo de consulta deberíamos realizar? 
-
 - Primero consultamos que candidato gana en todas las provincias, quedando solo los del partido 
 rojo (frank, claire, catherine).
 - Luego consultamos cuales son los candidatos mas jovenes de sus partidos (frank, linda, jackie).
 - El unico que cumple las dos condiciones es frank.  
-
 ¿Con qué concepto está relacionado?
-
 - Inversibilidad? Cuantificador Universal? 
 
+Maxi: En realidad cuando se pregunta sobre el tipo de consulta en el enunciado, se hace referencia a la consulta
+con una variable. Al realizarla, podemos ver la unificación que hace prolog con la variable, y darnos
+cuenta que el único que cumple la condición es Frank.
 */
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %  ----- Punto 5 del TP -----
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ajusteConsultora(Partido, Provincia, PorcentajeVerdadero) :-
+    partidoQueGanaEn(Partido, Provincia),
+    intencionDeVotoEn(Provincia, Partido, Votos),
+    PorcentajeVerdadero is Votos - 20.
 
-tieneUnaIntencionDeVoto(Provincia, Partido, Intencion) :-
-    candidato(_, Partido),
-    intencionDeVotoEn(Provincia, Partido, Intencion).
+ajusteConsultora(Partido, Provincia, PorcentajeVerdadero):-
+    not(partidoQueGanaEn(Partido, Provincia)),
+    intencionDeVotoEn(Provincia, Partido, Votos),
+    PorcentajeVerdadero is Votos + 5.
 
-tieneMayorIntencionDeVotoA(Partido, UnaIntencion, Provincia):-
-    intencionDeVotoEn(Provincia, Partido, OtraIntencion),
-    OtraIntencion > UnaIntencion.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-tieneMenorIntencionDeVotoA(Partido, UnaIntencion, Provincia):-
-    intencionDeVotoEn(Provincia, Partido, OtraIntencion),
-    OtraIntencion < UnaIntencion.
+partidoQueGanaEn(Partido, Provincia) :-
+    sePostula(Provincia, OtroPartido),
+    forall(sePostula(Provincia, Partido), ganaEnVotos(Partido, OtroPartido, Provincia)),
+    Partido\=OtroPartido.
 
-tieneUnaIntencionIntermedia(Provincia, Intencion) :-
-    candidato(_, SegundoPartido),
-    candidato(_, TercerPartido),
-    SegundoPartido \= TercerPartido,
-    tieneMenorIntencionDeVotoA(SegundoPartido, Intencion, Provincia),
-    tieneMayorIntencionDeVotoA(TercerPartido, Intencion, Provincia).
-
-tieneUnaIntencionAlta(Provincia, Intencion) :-
-    candidato(_, SegundoPartido),
-    tieneMenorIntencionDeVotoA(SegundoPartido, Intencion, Provincia).
-
-tieneUnaIntencionBaja(Provincia, Intencion) :-
-    candidato(_, SegundoPartido),
-    tieneMayorIntencionDeVotoA(SegundoPartido, Intencion, Provincia).
-
-tieneUnaIntencionGanadora(Provincia, Intencion) :-
-    tieneUnaIntencionAlta(Provincia, Intencion),
-    not(tieneUnaIntencionIntermedia(Provincia, Intencion)).
-
-tieneUnaIntencionPerdedora(Provincia, Intencion) :-
-    tieneUnaIntencionBaja(Provincia, Intencion),
-    not(tieneUnaIntencionIntermedia(Provincia, Intencion)).
-
-tieneUnaIntencionPerdedora(Provincia, Intencion) :-
-    tieneUnaIntencionIntermedia(Provincia, Intencion).
-
-ajusteConsultora(Partido, Provincia, Porcentaje) :-
-    tieneUnaIntencionDeVoto(Provincia, Partido, Intencion),
-    tieneUnaIntencionGanadora(Provincia, Intencion),
-    Porcentaje is Intencion - 20.
-
-ajusteConsultora(Partido, Provincia, Porcentaje) :-
-    tieneUnaIntencionDeVoto(Provincia, Partido, Intencion),
-    tieneUnaIntencionPerdedora(Provincia, Intencion),
-    Porcentaje is Intencion + 5.
+ganaEnVotos(Partido, OtroPartido, Provincia) :-
+intencionDeVotoEn(Provincia, Partido, VotosPartido),
+intencionDeVotoEn(Provincia, OtroPartido, VotosOtroPartido),
+Partido\=OtroPartido,
+VotosPartido > VotosOtroPartido.
 
 /*
+Maxi:
+	- El forall no muerde!!! jajajaja. Hay mucho mareo entre lo que es una intencion ganadora, una intención
+      perdedora, y la intención intermedia (Este problema también se encuentra en el punto anterior, con las edades). 
+      Yo diría más que nada de verificar de algún modo cuál es el partido
+      que gana en la provincia, para restarle a ese 20, y sino, restarle 5.
+      
+    - Ojo de nuevo con el tema de los generadores, tieneUnaIntencionDeVoto se repite en las diferentes clausulas
+      de ajusteConsultora.
+*/
 
+/*
 Si ahora quisiéramos evaluar todos los predicados con los valores reales de votos,
 ¿Qué cambios deberíamos hacer? ¿Cuántos predicados deberíamos modificar?
-
 - Deberiamos modificar las clausulas de intencionDeVotoEn/3 con las verdaderas intenciones
 de voto. 
-
 Por ejemplo si consultaramos sin modificar:
 ?- intencionDeVotoEn(buenosAires, rojo, Intencion)
 Intencion = 40
-
 Si quisieramos su verdadera intencion de voto deberiamos modificar el predicado a la forma:
 intencionDeVotoEn(buenosAires, rojo, 20).
-
 - Habria que modificar todas las clausulas de un unico predicado.
-
 */
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %  ----- Punto 6 del TP -----
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 promete(azul, construir([edificio(hospital, 1000), edificio(jardin, 100), edificio(escuela, 5)])).
 promete(amarillo, construir([edificio(hospital, 100), edificio(universidad, 1), edificio(comisaria,200)])).
 
@@ -303,8 +302,10 @@ promete(azul, inflacion(2,4)).
 promete(amarillo, inflacion(1,15)).
 promete(rojo, inflacion(10,30)).
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %  ----- Punto 7 del TP -----
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 valorASumarORestarDeCadaPromesa(ListaDeObras, 2) :-
     member(edificio(hospital, _), ListaDeObras).
 
@@ -343,8 +344,24 @@ influenciaDePromesas(construir(ListaDeObras), Variacion) :-
     findall(Valor, valorASumarORestarDeCadaPromesa(ListaDeObras,Valor), Valores),
     sumlist(Valores, Variacion).
 
-%  ----- Punto 8 del TP -----
+/*
+Maxi:
+	- Ojo con la inversibilidad!!! influenciaDePromesas así como está no es un predicado
+      inversible. le falta un generador!!!
 
+	- Ojo con la clausula de valorASumarORestarDeCadaPromesa
+      de los edificios que no son "edificios importantes para la poblacion". Hay
+      repetición de lógica y mal uso del paradigma lógico (Por ejemplo, para determinar
+      cuales son edificios importantes, que se podría hacer?).
+      
+    - También hay una repetición fea del member en las distintas clausulas de valorASumarORestarDeCadaPromesa.
+      Fijense si hay otro lugar en el cual podrían meter ese member, y pasar por parámetro los functores y calcular
+      las variaciones por separado.
+*/
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  ----- Punto 8 del TP -----
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 calcularVariaciones(Promesas, Variacion) :-  
     member(Promesa, Promesas),
     influenciaDePromesas(Promesa, Variacion).
@@ -355,3 +372,7 @@ promedioDeCrecimiento(Partido, Sumatoria) :-
     findall(Variacion, calcularVariaciones(Promesas, Variacion), Variaciones),
     sumlist(Variaciones, Sumatoria).
 
+/*
+Maxi:
+	- Esta bien, solo le cambiaria en realizar una delegacion de los findall, pero eso es a mi gusto.
+*/
