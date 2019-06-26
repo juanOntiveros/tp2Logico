@@ -151,16 +151,16 @@ leGanaA(UnCandidato, OtroCandidato, Provincia):-
 ganaA(_, OtroPartido, Provincia):-
     not(sePostula(Provincia, OtroPartido)).
 
-ganaA(unPartido, OtroPartido, Provincia):-
-    not(UnPartido \= OtroPartido),
-    sePostula(Provincia, UnPartido).
+ganaA(UnPartido, OtroPartido, _):-
+    not(UnPartido \= OtroPartido).
 
 ganaA(UnPartido, OtroPartido, Provincia) :-
-    sePostula(Provincia, OtroPartido),
+    mayorIntencionDeVoto(UnPartido, OtroPartido, Provincia).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+mayorIntencionDeVoto(UnPartido, OtroPartido, Provincia):-
     intencionDeVotoEn(Provincia, UnPartido, UnaIntencion),
     intencionDeVotoEn(Provincia, OtroPartido, OtraIntencion),
     UnaIntencion > OtraIntencion.
-
 /*
 Maxi:   
     - Fijense el tema de los generadores, están repitiendo lógica al utilizar el predicado generador "sonAmbosCandidatos"
