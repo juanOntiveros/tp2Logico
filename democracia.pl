@@ -151,16 +151,16 @@ leGanaA(UnCandidato, OtroCandidato, Provincia):-
 ganaA(_, OtroPartido, Provincia):-
     not(sePostula(Provincia, OtroPartido)).
 
-ganaA(UnPartido, OtroPartido, _):-
-    not(UnPartido \= OtroPartido).
+ganaA(unPartido, OtroPartido, Provincia):-
+    not(UnPartido \= OtroPartido),
+    sePostula(Provincia, UnPartido).
 
 ganaA(UnPartido, OtroPartido, Provincia) :-
-    mayorIntencionDeVoto(UnPartido, OtroPartido, Provincia).
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-mayorIntencionDeVoto(UnPartido, OtroPartido, Provincia):-
+    sePostula(Provincia, OtroPartido),
     intencionDeVotoEn(Provincia, UnPartido, UnaIntencion),
     intencionDeVotoEn(Provincia, OtroPartido, OtraIntencion),
     UnaIntencion > OtraIntencion.
+
 /*
 Maxi:   
     - Fijense el tema de los generadores, están repitiendo lógica al utilizar el predicado generador "sonAmbosCandidatos"
@@ -173,6 +173,10 @@ Maxi:
 candidatoDistinto(Candidato, OtroCandidato, Partido) :- 
     candidato(Candidato, Partido), 
     Candidato \=  OtroCandidato.
+
+candidatosEnProvincia(Provincia, Candidatos):-
+    sePostula(Provincia, Partido),
+    candidato(Candidatos, Partido).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 esDeMenorEdadA(Candidato, OtroCandidato) :-
     edad(Candidato, Edad),
@@ -184,11 +188,12 @@ esElMasJovenDeSuPartido(Candidato, Partido) :-
     forall(candidatoDistinto(OtroCandidato, Candidato, Partido), esDeMenorEdadA(Candidato, OtroCandidato)).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+/*
 ganaEnVotos(Partido, OtroPartido) :-
-intencionDeVotoEn(Provincia, Partido, VotosPartido),
-intencionDeVotoEn(Provincia, OtroPartido, VotosOtroPartido),
-Partido\=OtroPartido,
-VotosPartido > VotosOtroPartido.
+    intencionDeVotoEn(Provincia, Partido, VotosPartido),
+    intencionDeVotoEn(Provincia, OtroPartido, VotosOtroPartido),
+    Partido\=OtroPartido,
+    VotosPartido > VotosOtroPartido.
 
 ganaLaProvincia(Candidato, Partido, Provincia) :-
     candidato(OtroCandidato, OtroPartido),
@@ -198,11 +203,17 @@ ganaLaProvincia(Candidato, Partido, Provincia) :-
 ganaEnTodasLasProvincias(Candidato) :-
     candidato(Candidato, Partido),
     forall(sePostula(Provincia, Partido), ganaLaProvincia(Candidato, Partido, Provincia)).
+*/
+
+dondeSuPartidoCompiteElGana(Partido, Candidato):-
+    sePostula(Provincia, Partido),
+    forall(candidatosEnProvincia(Provincia, Candidatos), leGanaA(Candidato, Candidatos, _)).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 elGranCandidato(Candidato) :-
-    candidato(Candidato, _),
-    ganaEnTodasLasProvincias(Candidato),
+    candidato(Candidato, Partido),
+    dondeSuPartidoCompiteElGana(Partido, Candidato),
     esElMasJovenDeSuPartido(Candidato, _).
 
 /*
@@ -260,10 +271,10 @@ partidoQueGanaEn(Partido, Provincia) :-
     Partido\=OtroPartido.
 
 ganaEnVotos(Partido, OtroPartido, Provincia) :-
-intencionDeVotoEn(Provincia, Partido, VotosPartido),
-intencionDeVotoEn(Provincia, OtroPartido, VotosOtroPartido),
-Partido\=OtroPartido,
-VotosPartido > VotosOtroPartido.
+    intencionDeVotoEn(Provincia, Partido, VotosPartido),
+    intencionDeVotoEn(Provincia, OtroPartido, VotosOtroPartido),
+    Partido\=OtroPartido,
+    VotosPartido > VotosOtroPartido.
 
 /*
 Maxi:
@@ -274,6 +285,12 @@ Maxi:
       
     - Ojo de nuevo con el tema de los generadores, tieneUnaIntencionDeVoto se repite en las diferentes clausulas
       de ajusteConsultora.
+
+2:
+
+    - predicado no inversible y repeticion de generadores en ajusteConsultora
+
+    - Ver como manejar los votos del partido evaluado, para no evaluarlo dos veces en ganaEnVotos/3.
 */
 
 /*
