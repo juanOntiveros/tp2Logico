@@ -187,8 +187,6 @@ esElMasJovenDeSuPartido(Candidato, Partido) :-
     candidato(Candidato, Partido),
     forall(candidatoDistinto(OtroCandidato, Candidato, Partido), esDeMenorEdadA(Candidato, OtroCandidato)).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-/*
 ganaEnVotos(Partido, OtroPartido) :-
     intencionDeVotoEn(Provincia, Partido, VotosPartido),
     intencionDeVotoEn(Provincia, OtroPartido, VotosOtroPartido),
@@ -203,19 +201,13 @@ ganaLaProvincia(Candidato, Partido, Provincia) :-
 ganaEnTodasLasProvincias(Candidato) :-
     candidato(Candidato, Partido),
     forall(sePostula(Provincia, Partido), ganaLaProvincia(Candidato, Partido, Provincia)).
-*/
-
-dondeSuPartidoCompiteElGana(Partido, Candidato):-
-    sePostula(Provincia, Partido),
-    forall(candidatosEnProvincia(Provincia, Candidatos), leGanaA(Candidato, Candidatos, _)).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 elGranCandidato(Candidato) :-
-    candidato(Candidato, Partido),
-    dondeSuPartidoCompiteElGana(Partido, Candidato),
+    candidato(Candidato, _),
+    ganaEnTodasLasProvincias(Candidato),
     esElMasJovenDeSuPartido(Candidato, _).
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 /*
 Maxi:   
     - Medio que el forall de "ganaEnTodasLasProvincias" no estaría cerrandome. El forall hace referencia a que 
@@ -252,19 +244,6 @@ cuenta que el único que cumple la condición es Frank.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %  ----- Punto 5 del TP -----
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-ajusteConsultora(Partido, Provincia, PorcentajeVerdadero) :-
-    partidoQueGanaEn(Partido, Provincia),
-    intencionDeVotoEn(Provincia, Partido, Votos),
-    PorcentajeVerdadero is Votos - 20.
-
-ajusteConsultora(Partido, Provincia, PorcentajeVerdadero):-
-    not(partidoQueGanaEn(Partido, Provincia)),
-    intencionDeVotoEn(Provincia, Partido, Votos),
-    PorcentajeVerdadero is Votos + 5.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 partidoQueGanaEn(Partido, Provincia) :-
     sePostula(Provincia, OtroPartido),
     forall(sePostula(Provincia, Partido), ganaEnVotos(Partido, OtroPartido, Provincia)),
@@ -275,7 +254,21 @@ ganaEnVotos(Partido, OtroPartido, Provincia) :-
     intencionDeVotoEn(Provincia, OtroPartido, VotosOtroPartido),
     Partido\=OtroPartido,
     VotosPartido > VotosOtroPartido.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ajusteConsultora(Partido, Provincia, PorcentajeVerdadero):-
+    ajustePorcentaje(Partido, Provincia, PorcentajeVerdadero).
 
+ajustePorcentaje(Partido, Provincia, PorcentajeVerdadero) :-
+    partidoQueGanaEn(Partido, Provincia),
+    intencionDeVotoEn(Provincia, Partido, Votos),
+    PorcentajeVerdadero is Votos - 20.
+
+ajustePorcentaje(Partido, Provincia, PorcentajeVerdadero) :-
+    not(partidoQueGanaEn(Partido, Provincia)),
+    intencionDeVotoEn(Provincia, Partido, Votos),
+    PorcentajeVerdadero is Votos + 5.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 /*
 Maxi:
 	- El forall no muerde!!! jajajaja. Hay mucho mareo entre lo que es una intencion ganadora, una intención
@@ -323,43 +316,48 @@ promete(rojo, inflacion(10,30)).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %  ----- Punto 7 del TP -----
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-valorASumarORestarDeCadaPromesa(ListaDeObras, 2) :-
-    member(edificio(hospital, _), ListaDeObras).
+edificicioImportante(hospital).
+edificicioImportante(jardin).
+edificicioImportante(escuela).
+edificicioImportante(comisaria).
+edificicioImportante(universidad).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+variacionIntencionDeVoto(construir(edificio(hospital, _)), 2).
 
-valorASumarORestarDeCadaPromesa(ListaDeObras, Variacion) :-
-    member(edificio(jardin, Cantidad), ListaDeObras),
-    Variacion is (Cantidad * 0.1).
+variacionIntencionDeVoto(construir(edificio(comisaria, 200)), 2).
 
-valorASumarORestarDeCadaPromesa(ListaDeObras, Variacion) :-
-    member(edificio(escuela, Cantidad), ListaDeObras),
-    Variacion is (Cantidad * 0.1).
+variacionIntencionDeVoto(construir(edificio(universidad, _)), 0).
 
-valorASumarORestarDeCadaPromesa(ListaDeObras, 2) :-
-    member(edificio(comisaria, 200), ListaDeObras).
-
-valorASumarORestarDeCadaPromesa(ListaDeObras, 0) :-
-    member(edificio(universidad, _), ListaDeObras).
-
-valorASumarORestarDeCadaPromesa(ListaDeObras, -1) :-
-    member(edificio(OtroEdificio, _), ListaDeObras),
-    OtroEdificio \= comisaria,
-    OtroEdificio \= hospital,
-    OtroEdificio \= escuela,
-    OtroEdificio \= jardin,
-    OtroEdificio \= universidad.
-
-influenciaDePromesas(inflacion(CotaInferior, CotaSuperior), Variacion) :-
+variacionIntencionDeVoto(inflacion(CotaInferior, CotaSuperior), Variacion):-
     Variacion is (-1) * (CotaInferior + CotaSuperior) / 2.
-
-influenciaDePromesas(nuevosPuestosDeTrabajo(PuestosPrometidos), 3) :-
+ 
+variacionIntencionDeVoto(nuevosPuestosDeTrabajo(PuestosPrometidos), 3) :-
     PuestosPrometidos > 50000.
 
-influenciaDePromesas(nuevosPuestosDeTrabajo(PuestosPrometidos), 0) :-
+variacionIntencionDeVoto(nuevosPuestosDeTrabajo(PuestosPrometidos), 0) :-
     PuestosPrometidos =< 50000.
 
-influenciaDePromesas(construir(ListaDeObras), Variacion) :-
-    findall(Valor, valorASumarORestarDeCadaPromesa(ListaDeObras,Valor), Valores),
-    sumlist(Valores, Variacion).
+variacionIntencionDeVoto(construir(edificio(jardin, Cantidad)), Variacion) :-
+    Variacion is (Cantidad * 0.1).
+
+variacionIntencionDeVoto(construir(edificio(escuela, Cantidad)), Variacion) :-
+    Variacion is (Cantidad * 0.1).
+
+variacionIntencionDeVoto(construir(edificio(OtroEdificio, _)), -1) :-
+    not(edificicioImportante(OtroEdificio)).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+sumaVariacionesDePromesa(construir(ListaDeConstrucciones), Total) :-
+    findall(Variacion, (member(Construccion, ListaDeConstrucciones), variacionIntencionDeVoto(construir(Construccion), Variacion)), Variaciones),
+    sumlist(Variaciones, Total).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+influenciaDePromesas(Promesa, Variacion) :-
+    promete(_, Promesa),
+    variacionIntencionDeVoto(Promesa, Variacion).
+
+influenciaDePromesas(construir([PrimeraConstruccion | OtrasConstrucciones]), Variacion) :-
+    promete(_, construir([PrimeraConstruccion | OtrasConstrucciones])),
+    sumaVariacionesDePromesa(construir([PrimeraConstruccion | OtrasConstrucciones]), Variacion).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 /*
 Maxi:
