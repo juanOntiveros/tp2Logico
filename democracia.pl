@@ -151,8 +151,7 @@ leGanaA(UnCandidato, OtroCandidato, Provincia):-
 ganaA(_, OtroPartido, Provincia):-
     not(sePostula(Provincia, OtroPartido)).
 
-ganaA(unPartido, OtroPartido, Provincia):-
-    not(UnPartido \= OtroPartido),
+ganaA(UnPartido, UnPartido, Provincia):-
     sePostula(Provincia, UnPartido).
 
 ganaA(UnPartido, OtroPartido, Provincia) :-
