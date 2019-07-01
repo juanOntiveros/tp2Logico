@@ -269,16 +269,6 @@ ajustePorcentaje(Partido, Provincia, PorcentajeVerdadero) :-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-partidoQueGanaEn(Partido, Provincia) :-
-    sePostula(Provincia, OtroPartido),
-    forall(sePostula(Provincia, Partido), ganaEnVotos(Partido, OtroPartido, Provincia)),
-    Partido\=OtroPartido.
-
-ganaEnVotos(Partido, OtroPartido, Provincia) :-
-    intencionDeVotoEn(Provincia, Partido, VotosPartido),
-    intencionDeVotoEn(Provincia, OtroPartido, VotosOtroPartido),
-    Partido\=OtroPartido,
-    VotosPartido > VotosOtroPartido.
 /*
 Maxi:
 	- El forall no muerde!!! jajajaja. Hay mucho mareo entre lo que es una intencion ganadora, una intención
