@@ -67,8 +67,6 @@ cantidadDeHabitantes(misiones, 1189446).
 No se refleja en la base de conocimientos porque no es necesario explicitarlo que:
 - Peter no es candidato del partido Amarillo.
 - El partido violeta no tiene candidatos.
-
-Maxi: NICE!
 */
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -87,9 +85,6 @@ esPicante(Provincia) :-
     sePresentanAlMenosDosPartidos(Provincia),
     tieneMasDeUnMillonDeHabitantes(Provincia).
 
-/*
-Maxi: No mistakes here, muy buena declaratividad en los nombres!
-*/
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %  ----- Punto 3 del TP -----
@@ -151,21 +146,18 @@ leGanaA(UnCandidato, OtroCandidato, Provincia):-
 ganaA(_, OtroPartido, Provincia):-
     not(sePostula(Provincia, OtroPartido)).
 
-ganaA(UnPartido, OtroPartido, _):-
-    not(UnPartido \= OtroPartido).
+ganaA(UnPartido, UnPartido, Provincia) :-
+    sePostula(Provincia, UnPartido).
+/*ganaA(unPartido, OtroPartido, Provincia):-
+    not(UnPartido \= OtroPartido),
+    sePostula(Provincia, UnPartido).*/
 
 ganaA(UnPartido, OtroPartido, Provincia) :-
-    mayorIntencionDeVoto(UnPartido, OtroPartido, Provincia).
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-mayorIntencionDeVoto(UnPartido, OtroPartido, Provincia):-
+    sePostula(Provincia, OtroPartido),
     intencionDeVotoEn(Provincia, UnPartido, UnaIntencion),
     intencionDeVotoEn(Provincia, OtroPartido, OtraIntencion),
     UnaIntencion > OtraIntencion.
-/*
-Maxi:   
-    - Fijense el tema de los generadores, están repitiendo lógica al utilizar el predicado generador "sonAmbosCandidatos"
-      En diferentes cláusulas de leGanaA.
-*/
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %  ----- Punto 4 del TP -----
@@ -173,6 +165,10 @@ Maxi:
 candidatoDistinto(Candidato, OtroCandidato, Partido) :- 
     candidato(Candidato, Partido), 
     Candidato \=  OtroCandidato.
+
+candidatosEnProvincia(Provincia, Candidatos):-
+    sePostula(Provincia, Partido),
+    candidato(Candidatos, Partido).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 esDeMenorEdadA(Candidato, OtroCandidato) :-
     edad(Candidato, Edad),
@@ -182,7 +178,6 @@ esDeMenorEdadA(Candidato, OtroCandidato) :-
 esElMasJovenDeSuPartido(Candidato, Partido) :-
     candidato(Candidato, Partido),
     forall(candidatoDistinto(OtroCandidato, Candidato, Partido), esDeMenorEdadA(Candidato, OtroCandidato)).
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ganaEnVotos(Partido, OtroPartido) :-
     intencionDeVotoEn(Provincia, Partido, VotosPartido),
@@ -204,18 +199,20 @@ elGranCandidato(Candidato) :-
     candidato(Candidato, _),
     ganaEnTodasLasProvincias(Candidato),
     esElMasJovenDeSuPartido(Candidato, _).
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 /*
-Maxi:   
-    - Medio que el forall de "ganaEnTodasLasProvincias" no estaría cerrandome. El forall hace referencia a que 
-      "Todas las provincias en donde se postule el partido, el candidato las gana", lo cual declarativamente puede
-      tener sentido, pero el tema es que ganaLaProvincia ya me retorna verdadero si existe un candidato del otro
-      partido al que el candidato le gane. Fijense de arreglar esa lógica!
-      
-    - Fijense también el tema de los generadores y la repetición de lógica entre ganaEnTodasLasProvincias y esElMasJovenDeSuPartido.
-    
-    - ojo con la lógica de esElMasJovenDeSuPartido. Intenten realizarlo también con forall y no con negación!
-      porque así como está tiene problemas de declaratividad.
+Maxi:
+en una de las cláusulas del predicado ganaA\2, aparece esto:
+ganaA(unPartido, OtroPartido, Provincia) :-
+  not(UnPartido\=OtroPartido),
+  ....
+
+mas allá que unPartido está en minuscula, por ende es un atomo y no una variable, 
+para poder resolver el problema de que los partidos sean iguales, lo podrian haber resuelto así:
+ganaA(UnPartido, UnPartido, Provincia) :-
+...
+
+Y se aseguran que prolog va a unificar la variable con valores iguales!
 */
 
 /*
@@ -241,19 +238,6 @@ cuenta que el único que cumple la condición es Frank.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %  ----- Punto 5 del TP -----
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-ajusteConsultora(Partido, Provincia, PorcentajeVerdadero) :-
-    partidoQueGanaEn(Partido, Provincia),
-    intencionDeVotoEn(Provincia, Partido, Votos),
-    PorcentajeVerdadero is Votos - 20.
-
-ajusteConsultora(Partido, Provincia, PorcentajeVerdadero):-
-    not(partidoQueGanaEn(Partido, Provincia)),
-    intencionDeVotoEn(Provincia, Partido, Votos),
-    PorcentajeVerdadero is Votos + 5.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 partidoQueGanaEn(Partido, Provincia) :-
     sePostula(Provincia, OtroPartido),
     forall(sePostula(Provincia, Partido), ganaEnVotos(Partido, OtroPartido, Provincia)),
@@ -264,22 +248,29 @@ ganaEnVotos(Partido, OtroPartido, Provincia) :-
     intencionDeVotoEn(Provincia, OtroPartido, VotosOtroPartido),
     Partido\=OtroPartido,
     VotosPartido > VotosOtroPartido.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ajusteConsultora(Partido, Provincia, Porcentaje) :-
+  intencionDeVotoEn(Partido, Provincia, Intencion),
+  ajustePorcentaje(Partido, Provincia, Intencion, Porcentaje).
+
+ajustePorcentaje(Partido, Provincia, Intencion, Porcentaje) :-
+    partidoQueGanaEn(Partido, Provincia),
+    Porcentaje is Intencion - 20.
+
+ajustePorcentaje(Partido, Provincia, Intencion, Porcentaje) :-
+    not(partidoQueGanaEn(Partido, Provincia)),
+    Porcentaje is Intencion + 5.
 
 /*
 Maxi:
-	- El forall no muerde!!! jajajaja. Hay mucho mareo entre lo que es una intencion ganadora, una intención
-      perdedora, y la intención intermedia (Este problema también se encuentra en el punto anterior, con las edades). 
-      Yo diría más que nada de verificar de algún modo cuál es el partido
-      que gana en la provincia, para restarle a ese 20, y sino, restarle 5.
-      
-    - Ojo de nuevo con el tema de los generadores, tieneUnaIntencionDeVoto se repite en las diferentes clausulas
-      de ajusteConsultora.
+ajustePorcentaje\3 sigue teniendo los mismos problemas que tenia antes ajusteConsultora\3. 
+La idea mas que nada era generar en ajusteConsultora\3 para no repetirlos en ajustePorcentaje\3. 
+Algo asi:
+ajusteConsultora(Partido, Provincia, Porcentaje) :-
+  intencionDeVotoEn(Partido, Provincia, Intencion),
+  ajustePorcentaje(Partido, Provincia, Intencion, Porcentaje).
 
-2:
-
-    - predicado no inversible y repeticion de generadores en ajusteConsultora
-
-    - Ver como manejar los votos del partido evaluado, para no evaluarlo dos veces en ganaEnVotos/3.
+Con esto nos aseguramos no repetir intencionDeVotoEn\2
 */
 
 /*
@@ -312,57 +303,62 @@ promete(rojo, inflacion(10,30)).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %  ----- Punto 7 del TP -----
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-valorASumarORestarDeCadaPromesa(ListaDeObras, 2) :-
-    member(edificio(hospital, _), ListaDeObras).
+edificicioImportante(hospital).
+edificicioImportante(jardin).
+edificicioImportante(escuela).
+edificicioImportante(comisaria).
+edificicioImportante(universidad).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+variacionIntencionDeVoto(construir(edificio(hospital, _)), 2).
 
-valorASumarORestarDeCadaPromesa(ListaDeObras, Variacion) :-
-    member(edificio(jardin, Cantidad), ListaDeObras),
-    Variacion is (Cantidad * 0.1).
+variacionIntencionDeVoto(construir(edificio(comisaria, 200)), 2).
 
-valorASumarORestarDeCadaPromesa(ListaDeObras, Variacion) :-
-    member(edificio(escuela, Cantidad), ListaDeObras),
-    Variacion is (Cantidad * 0.1).
+variacionIntencionDeVoto(construir(edificio(universidad, _)), 0).
 
-valorASumarORestarDeCadaPromesa(ListaDeObras, 2) :-
-    member(edificio(comisaria, 200), ListaDeObras).
-
-valorASumarORestarDeCadaPromesa(ListaDeObras, 0) :-
-    member(edificio(universidad, _), ListaDeObras).
-
-valorASumarORestarDeCadaPromesa(ListaDeObras, -1) :-
-    member(edificio(OtroEdificio, _), ListaDeObras),
-    OtroEdificio \= comisaria,
-    OtroEdificio \= hospital,
-    OtroEdificio \= escuela,
-    OtroEdificio \= jardin,
-    OtroEdificio \= universidad.
-
-influenciaDePromesas(inflacion(CotaInferior, CotaSuperior), Variacion) :-
+variacionIntencionDeVoto(inflacion(CotaInferior, CotaSuperior), Variacion):-
     Variacion is (-1) * (CotaInferior + CotaSuperior) / 2.
-
-influenciaDePromesas(nuevosPuestosDeTrabajo(PuestosPrometidos), 3) :-
+ 
+variacionIntencionDeVoto(nuevosPuestosDeTrabajo(PuestosPrometidos), 3) :-
     PuestosPrometidos > 50000.
 
-influenciaDePromesas(nuevosPuestosDeTrabajo(PuestosPrometidos), 0) :-
+variacionIntencionDeVoto(nuevosPuestosDeTrabajo(PuestosPrometidos), 0) :-
     PuestosPrometidos =< 50000.
 
-influenciaDePromesas(construir(ListaDeObras), Variacion) :-
-    findall(Valor, valorASumarORestarDeCadaPromesa(ListaDeObras,Valor), Valores),
-    sumlist(Valores, Variacion).
+variacionIntencionDeVoto(construir(edificio(jardin, Cantidad)), Variacion) :-
+    Variacion is (Cantidad * 0.1).
+
+variacionIntencionDeVoto(construir(edificio(escuela, Cantidad)), Variacion) :-
+    Variacion is (Cantidad * 0.1).
+
+variacionIntencionDeVoto(construir(edificio(OtroEdificio, _)), -1) :-
+    not(edificicioImportante(OtroEdificio)).
+
+variacionIntencionDeVoto(construir([PrimeraConstruccion | OtrasConstrucciones]), Variacion) :-
+    sumaVariacionesDePromesa(construir([PrimeraConstruccion | OtrasConstrucciones]), Variacion).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+sumaVariacionesDePromesa(construir(ListaDeConstrucciones), Total) :-
+    findall(Variacion, (member(Construccion, ListaDeConstrucciones), variacionIntencionDeVoto(construir(Construccion), Variacion)), Variaciones),
+    sumlist(Variaciones, Total).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+influenciaDePromesas(Promesa, Variacion) :-
+    promete(_, Promesa),
+    variacionIntencionDeVoto(Promesa, Variacion).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 /*
 Maxi:
-	- Ojo con la inversibilidad!!! influenciaDePromesas así como está no es un predicado
-      inversible. le falta un generador!!!
+Mucho mejor influenciaDePromesas\2! Igualmente una cosa para corregir:
 
-	- Ojo con la clausula de valorASumarORestarDeCadaPromesa
-      de los edificios que no son "edificios importantes para la poblacion". Hay
-      repetición de lógica y mal uso del paradigma lógico (Por ejemplo, para determinar
-      cuales son edificios importantes, que se podría hacer?).
-      
-    - También hay una repetición fea del member en las distintas clausulas de valorASumarORestarDeCadaPromesa.
-      Fijense si hay otro lugar en el cual podrían meter ese member, y pasar por parámetro los functores y calcular
-      las variaciones por separado.
+- Al partir influenciaDePromesas\2 en dos clausulas terminaron repitiendo 
+generadores en las dos. Para corregir esto, podrían delegar el tema de las 
+construcciones directamente a variacionDeIntencionDeVoto\2, y todos los manejos 
+de los edificios a un predicado diferente. Es decir que, influenciaDePromesas\2 
+solo tendria que "Consultar" a variacionDeIntencionDeVoto\2 para cualquier 
+promesa, variacionDeIntencionDeVoto\2 solo se manejaria con el functor 
+construir (Y las otras promesas tambien), donde estaria la sumatoria, y el 
+predicado que diga los valores de cada edificio seria otro aparte.
+
+- Ojo tambien con hacer pattern matching donde no lo utilizan o no es necesario!
 */
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
