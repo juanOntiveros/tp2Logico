@@ -185,10 +185,10 @@ esElMasJovenDeSuPartido(Candidato, Partido) :-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ganaEnVotos(Partido, OtroPartido) :-
-intencionDeVotoEn(Provincia, Partido, VotosPartido),
-intencionDeVotoEn(Provincia, OtroPartido, VotosOtroPartido),
-Partido\=OtroPartido,
-VotosPartido > VotosOtroPartido.
+    intencionDeVotoEn(Provincia, Partido, VotosPartido),
+    intencionDeVotoEn(Provincia, OtroPartido, VotosOtroPartido),
+    Partido\=OtroPartido,
+    VotosPartido > VotosOtroPartido.
 
 ganaLaProvincia(Candidato, Partido, Provincia) :-
     candidato(OtroCandidato, OtroPartido),
@@ -260,10 +260,10 @@ partidoQueGanaEn(Partido, Provincia) :-
     Partido\=OtroPartido.
 
 ganaEnVotos(Partido, OtroPartido, Provincia) :-
-intencionDeVotoEn(Provincia, Partido, VotosPartido),
-intencionDeVotoEn(Provincia, OtroPartido, VotosOtroPartido),
-Partido\=OtroPartido,
-VotosPartido > VotosOtroPartido.
+    intencionDeVotoEn(Provincia, Partido, VotosPartido),
+    intencionDeVotoEn(Provincia, OtroPartido, VotosOtroPartido),
+    Partido\=OtroPartido,
+    VotosPartido > VotosOtroPartido.
 
 /*
 Maxi:
@@ -274,6 +274,12 @@ Maxi:
       
     - Ojo de nuevo con el tema de los generadores, tieneUnaIntencionDeVoto se repite en las diferentes clausulas
       de ajusteConsultora.
+
+2:
+
+    - predicado no inversible y repeticion de generadores en ajusteConsultora
+
+    - Ver como manejar los votos del partido evaluado, para no evaluarlo dos veces en ganaEnVotos/3.
 */
 
 /*
